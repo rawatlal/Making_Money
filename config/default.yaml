@@ -1,0 +1,74 @@
+# ── Universe ──
+universe:
+  provider: "russell1000"
+  fallback_csv: "src/universe/russell1000_tickers.csv"
+  refresh_interval_days: 7
+
+# ── Data ──
+data:
+  source: "yfinance"
+  history_years: 5
+  cache_dir: "data"
+  stale_after_hours: 24
+  download_chunk_size: 50
+
+# ── Factors ──
+factors:
+  - name: "pe_ratio"
+    weight: 0.20
+  - name: "pb_ratio"
+    weight: 0.15
+  - name: "ev_ebitda"
+    weight: 0.15
+  - name: "momentum_3m"
+    weight: 0.15
+  - name: "momentum_6m"
+    weight: 0.20
+  - name: "momentum_12m"
+    weight: 0.15
+
+scoring:
+  winsorize_percentile: [1, 99]
+  zscore_method: "cross_sectional"
+  missing_score_handling: "drop"
+
+# ── Portfolio Construction ──
+portfolio:
+  optimizer: "max_sharpe"
+  top_n: 50
+  covariance:
+    method: "ledoit_wolf"
+    lookback_days: 252
+  constraints:
+    long_only: true
+    max_position_weight: 0.05
+    min_position_weight: 0.005
+    max_sector_weight: 0.30
+    max_turnover_per_rebalance: 0.50
+
+# ── Rebalancing ──
+rebalance:
+  frequency: "monthly"
+  drift_threshold: 0.10
+
+# ── Backtest ──
+backtest:
+  start_date: "2019-01-01"
+  end_date: "2025-12-31"
+  initial_capital: 1000000
+  benchmark: "SPY"
+  risk_free_rate: 0.04
+
+# ── Transaction Costs ──
+costs:
+  commission_per_share: 0.005
+  min_commission: 1.00
+  slippage:
+    model: "sqrt_impact"
+    half_spread_bps: 5
+    impact_coefficient: 0.1
+
+# ── Logging ──
+logging:
+  level: "INFO"
+  file: "logs/backtest.log"
